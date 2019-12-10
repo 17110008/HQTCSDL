@@ -1,0 +1,130 @@
+using System;
+using System.Data;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace TiemVangKimBong
+{
+    public partial class FormLogin : Form
+    {
+        bool admin = false;
+        bool nv = false;
+        public FormLogin()
+        {
+            InitializeComponent();
+        }
+        public void NhanVien()
+        {
+            FormBanHang k = new FormBanHang();
+            this.Hide();
+            k.ShowDialog();
+            this.Show();
+        }
+        public void Admin()
+        {
+            FormMain k = new FormMain();
+            this.Hide();
+            k.ShowDialog();
+            this.Show();
+        }
+        public void PhanQuyen()
+        {
+            if (nv)
+            {
+                NhanVien();
+                nv = false;
+            }
+            if (admin)
+            {
+                Admin();
+                admin = false;
+            }
+        }
+        public void Login()
+        {
+            if (string.IsNullOrEmpty(txtID.Text))
+            {
+                MessageBox.Show("Không được để trống ID", "Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtID.Focus();
+                return;
+            }
+            else if (string.IsNullOrEmpty(txtPass.Text))
+            {
+                MessageBox.Show("Không được để trống Password", "Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtPass.Focus();
+                return;
+            }
+            try
+            {
+                using (ProjectdatabaseEntities db = new ProjectdatabaseEntities())
+                {
+                    var query = from u in db.TaiKhoans
+                                where u.ID == txtID.Text && u.Pass == txtPass.Text
+                                select u;
+                    if (query.SingleOrDefault() != null)
+                    {
+                        if (txtID.Text == "admin")
+                        {
+                            admin = true;
+                            
+                        }
+                        else
+                        {
+                            nv = true;
+                        }
+
+                    }
+                    else
+                    {
+                        MessageBox.Show("Sai ID hoặc Password");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+
+        }
+        private void FormLogin_FormClosing(object sender, FormClosingEventArgs e)
+        {
+
+            if (MessageBox.Show("Are You Sure ?", "Thông Báo", MessageBoxButtons.OKCancel,
+            MessageBoxIcon.Question) != System.Windows.Forms.DialogResult.OK)
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void btnlogin_Click(object sender, EventArgs e)
+        {
+            Login();
+            PhanQuyen();
+        }
+
+        private void Exit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void txtID_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                Login();
+                PhanQuyen();
+            }
+        }
+
+        private void txtPass_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                Login();
+                PhanQuyen();
+            }
+        }
+    }
+}
